@@ -3,41 +3,20 @@ from tkinter import filedialog
 from tkinter import messagebox
 import keyboard
 import os
-import string as str
 import subprocess
 import pyglet
-
-
-pyglet.font.add_file('./font/PretendardVariable.ttf')
-nowfile = ''
-rf = open('./data/r.txt', 'r', encoding='UTF-8')
-rpath = rf.readline()
-rf.close
 
 def seeend() :
     text.see(END)
     otext.see(END)
 
 def resize(event):
-   
     pixelX=window.winfo_width()-yscrollbar.winfo_width()
     pixelY=window.winfo_height()
     text["width"]=int(round(pixelX/h[1]))
     text["height"]=int(round(pixelY/h[0]))
     otext["width"]=int(round(pixelX/h[1]))
     otext["height"]=7
-
-def set_tag():
-    try :
-        bs_idx = '1.0'
-        while 1 :
-            bs_idx = text.search("```{r", bs_idx, nocase=1, stopindex=END)
-            if not bs_idx : break
-            bs_lastidx = "%s+3c" % (text.search("```\n", bs_idx, nocase=1, stopindex=END))
-            text.tag_add('boxstart', bs_idx, bs_lastidx)
-            bs_idx = bs_lastidx
-            text.tag_config('boxstart', background='#CCCCCC', foreground='black')
-    except : return 0
 
 def o_empty():
     otext.delete('1.0', END)
@@ -116,7 +95,7 @@ def runr():
         ftarget = ftarget.split(sep='\n', maxsplit=1)
         f.write(ftarget[1])
         f.close()
-        output = subprocess.getoutput("\"" + rpath + "\" temp.r")
+        output = subprocess.getoutput("\"" + rpath + "\" ./data/temp.r")
         otext.insert('1.0', output)
     except : otext.insert('1.0', "Rpad typeerror")
     otext.see(END)
@@ -145,7 +124,7 @@ def runa():
         f2.close()
     except Exception as e : otext.insert('1.0', e)
     try :
-        output = subprocess.getoutput("\"" + rpath + "\" temp.r")
+        output = subprocess.getoutput("\"" + rpath + "\" ./data/temp.r")
         otext.insert('1.0', output)
     except : otext.insert('1.0', "Rpad typeerror 3")
     seeend()
@@ -179,6 +158,17 @@ def frse() :
     global rpath
     rpath = rsefile
 
+def set_tag():
+    bs_idx = '1.0'
+    while True :
+        bs_idx = text.search("```{r", bs_idx, nocase=1, stopindex=END)
+        if not bs_idx : break
+        bs_lastidx = "%s+3c" % (text.search("```\n", bs_idx, nocase=1, stopindex=END))
+        if not bs_lastidx : break
+        text.tag_add('boxstart', bs_idx, bs_lastidx)
+        bs_idx = bs_lastidx
+        text.tag_config('boxstart', background='#CCCCCC', foreground='black')
+
 def newfile() :
     file = open("./data/templete.Rmd", 'r', encoding="UTF-8")
     global nowfile
@@ -203,6 +193,13 @@ def mfont():
         text.delete('insert linestart', 'insert lineend')
     except : otext.insert('1.0', "fontsize typeerror")
 
+pyglet.font.add_file('./font/PretendardVariable.ttf')
+
+nowfile = ''
+rf = open('./data/r.txt', 'r', encoding='UTF-8')
+rpath = rf.readline()
+rf.close
+
 #창 생성
 window = Tk()
 window.title('RPad Beta')
@@ -212,17 +209,26 @@ window.resizable(1,1)
 
 text = Text(window, undo=True)
 text.grid(row=0, column=0, sticky=W+N+S+E)
-text.configure(font=("Pretendard Variable Medium", 16))
+text.configure(font=("Pretendard Variable Medium", 20))
 
 yscrollbar = Scrollbar(window, orient=VERTICAL, command=text.yview)
 yscrollbar.grid(row=0, column=1, sticky=N+S+E+W)
 text["yscrollcommand"]=yscrollbar.set
 text.update()
 
+text.bind("<Control-s>", lambda event: qsave())
+text.bind("<Control-Shift-s>", lambda event: save())
+text.bind("<Control-o>", lambda event: fopen())
+text.bind("<Control-r>", lambda event: runr())
+text.bind("<Control-a>", lambda event: runa())
+text.bind("<Control-e>", lambda event: o_empty())
+text.bind("<Return>", lambda event: set_tag())
+text.bind("<Alt-t>", lambda event: mfont())
+
 
 otext = Text(window, undo=True)
-otext.grid(row=1, column=0, sticky=W+N+S)
-otext.configure(font=("Pretendard Variable Medium", 16))
+otext.grid(row=1, column=0, sticky=W+N+S+E)
+otext.configure(font=("Pretendard Variable Medium", 20))
 
 oyscrollbar = Scrollbar(window, orient=VERTICAL, command=otext.yview)
 oyscrollbar.grid(row=1, column=1, sticky=N+S+E+W)
@@ -233,7 +239,6 @@ h=int(round(text.winfo_height()/text["height"])), int(round(text.winfo_width()/t
 
 window.grid_rowconfigure(0, weight=1)
 window.grid_columnconfigure(0, weight=1)
-#text.pack()
 
 #메뉴를 붙인다
 menu = Menu(window)
@@ -266,19 +271,14 @@ helpmenu.add_command(label="Rscript.exe", command=rse)
 
 window.bind("<Configure>", resize)
     
-keyboard.add_hotkey("ctrl+s", lambda: qsave())
-keyboard.add_hotkey("ctrl+shift+s", lambda: save())
-keyboard.add_hotkey("ctrl+o", lambda: fopen())
-keyboard.add_hotkey("alt+F4", lambda: quit())
-keyboard.add_hotkey("ctrl+r", lambda: runr())
-keyboard.add_hotkey("ctrl+shift+r", lambda: runa())
-keyboard.add_hotkey("ctrl+e", lambda: o_empty())
-keyboard.add_hotkey("enter", lambda: set_tag())
-keyboard.add_hotkey("ctrl+shift+t", lambda: mfont())
+#keyboard.add_hotkey("ctrl+s", lambda: qsave())
+#keyboard.add_hotkey("ctrl+shift+s", lambda: save())
+#keyboard.add_hotkey("ctrl+o", lambda: fopen())
+#keyboard.add_hotkey("alt+F4", lambda: quit())
+#keyboard.add_hotkey("ctrl+r", lambda: runr())
+#keyboard.add_hotkey("ctrl+shift+r", lambda: runa())
+#keyboard.add_hotkey("ctrl+e", lambda: o_empty())
+#keyboard.add_hotkey("enter", lambda: set_tag())
+#keyboard.add_hotkey("ctrl+shift+t", lambda: mfont())
 
 window.mainloop()
-
-#단어 찾기
-#단어 치환
-#앞으로 마크
-#뒤로 마크
