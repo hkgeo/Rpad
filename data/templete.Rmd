@@ -1,0 +1,8 @@
+---
+title: "your awesome title"
+author: "your name here"
+date: "2022-10-01"
+output:
+  word_document: default
+  html_document: default
+---

@@ -5,9 +5,12 @@ import keyboard
 import os
 import string as str
 import subprocess
+import pyglet
 
+
+pyglet.font.add_file('./font/PretendardVariable.ttf')
 nowfile = ''
-rf = open('./r.txt', 'r', encoding='UTF-8')
+rf = open('./data/r.txt', 'r', encoding='UTF-8')
 rpath = rf.readline()
 rf.close
 
@@ -24,9 +27,21 @@ def resize(event):
     otext["width"]=int(round(pixelX/h[1]))
     otext["height"]=7
 
+def set_tag():
+    try :
+        bs_idx = '1.0'
+        while 1 :
+            bs_idx = text.search("```{r", bs_idx, nocase=1, stopindex=END)
+            if not bs_idx : break
+            bs_lastidx = "%s+3c" % (text.search("```\n", bs_idx, nocase=1, stopindex=END))
+            text.tag_add('boxstart', bs_idx, bs_lastidx)
+            bs_idx = bs_lastidx
+            text.tag_config('boxstart', background='#CCCCCC', foreground='black')
+    except : return 0
+
 def o_empty():
     otext.delete('1.0', END)
-    f = open("./temp.r", 'w', encoding="UTF-8")
+    f = open("./data/temp.r", 'w', encoding="UTF-8")
     f.write("")
     f.close
 
@@ -89,8 +104,9 @@ def runcom():
         print(e)
 
 def runr():
+    set_tag()
     otext.delete('1.0', END)
-    f = open("./temp.r", 'a', encoding="UTF-8")
+    f = open("./data/temp.r", 'a', encoding="UTF-8")
     otarget = text.get('1.0', "insert linestart")
     ntarget = text.get("insert linestart", END)
     try :
@@ -109,7 +125,7 @@ def runa():
     o_empty()
     otext.delete('1.0', END)
     try :
-        f = open("./temps.r", 'a', encoding="UTF-8")
+        f = open("./data/temps.r", 'a', encoding="UTF-8")
         otarget = text.get('1.0', END).split(sep="```")
         for i in range(len(otarget)) :
             if i % 2 != 0 :
@@ -117,8 +133,8 @@ def runa():
         f.close()        
     except : otext.insert('1.0', "Rpad typeerror 1")
     try :
-        f1 = open("./temps.r", 'r', encoding='UTF-8')
-        f2 = open("./temp.r", 'a', encoding='UTF-8')
+        f1 = open("./data/temps.r", 'r', encoding='UTF-8')
+        f2 = open("./data/temp.r", 'a', encoding='UTF-8')
         while True :
             inStr = f1.readline()
             if inStr == '' :
@@ -134,20 +150,9 @@ def runa():
     except : otext.insert('1.0', "Rpad typeerror 3")
     seeend()
 
-def cppdf() :
-    cpfile = filedialog.askopenfilename(parent=window)
-    f = open("./render.r", 'w', encoding="UTF-8")
-    f.write("rmarkdown::render(\"" + cpfile + "\", \"pdf_document\")")
-    f.close()
-    try :
-        output = subprocess.getoutput("\"" + rpath + "\" render.r")
-        otext.insert('1.0', output)
-    except : otext.insert('1.0', "Rpad typeerror")
-    otext.see(END)
-
 def cpdocx() :
     cpfile = filedialog.askopenfilename(parent=window)
-    f = open("./render.r", 'w', encoding="UTF-8")
+    f = open("./data/render.r", 'w', encoding="UTF-8")
     f.write("rmarkdown::render(\"" + cpfile + "\", \"word_document\")")
     f.close()
     try :
@@ -158,7 +163,7 @@ def cpdocx() :
 
 def cphtml() :
     cpfile = filedialog.askopenfilename(parent=window)
-    f = open("./render.r", 'w', encoding="UTF-8")
+    f = open("./data/render.r", 'w', encoding="UTF-8")
     f.write("rmarkdown::render(\"" + cpfile + "\", \"html_document\")")
     f.close()
     try :
@@ -169,13 +174,13 @@ def cphtml() :
 
 def frse() :
     rsefile = filedialog.askopenfilename(parent=window)
-    f = open("./r.txt", 'w', encoding="UTF-8")
+    f = open("./data/r.txt", 'w', encoding="UTF-8")
     f.write(rsefile)
     global rpath
     rpath = rsefile
 
 def newfile() :
-    file = open("./templete.Rmd", 'r', encoding="UTF-8")
+    file = open("./data/templete.Rmd", 'r', encoding="UTF-8")
     global nowfile
     nowfile = ''
     window.title("Rpad Beta - Unsaved Document")
@@ -188,17 +193,27 @@ def newfile() :
     o_empty()
     seeend()
 
+def font_size():
+    try :
+        var1 = text.get('insert linestart', 'insert lineend')
+        var2 = int(var1)
+        text.configure(font=("Pretendard Variable Medium", var2))
+        otext.configure(font=("Pretendard Variable Medium", var2))
+        text.update()
+        otext.update()
+        text.delete('insert linestart', 'insert lineend')
+    except : otext.insert('1.0', "fontsize typeerror")
 
 #창 생성
 window = Tk()
 window.title('RPad Beta')
 window.geometry('1024x768')
-window.iconbitmap('rpadico.ico')
+window.iconbitmap('./data/rpadico.ico')
 window.resizable(1,1)
 
 text = Text(window, undo=True)
-text.grid(row=0, column=0, sticky=W+N+S)
-text.configure(font=("Consolas", 16, "bold"))
+text.grid(row=0, column=0, sticky=W+N+S+E)
+text.configure(font=("Pretendard Variable Medium", 16))
 
 yscrollbar = Scrollbar(window, orient=VERTICAL, command=text.yview)
 yscrollbar.grid(row=0, column=1, sticky=N+S+E+W)
@@ -208,7 +223,7 @@ text.update()
 
 otext = Text(window, undo=True)
 otext.grid(row=1, column=0, sticky=W+N+S)
-otext.configure(font=("Consolas", 16, "bold"))
+otext.configure(font=("Pretendard Variable Medium", 16))
 
 oyscrollbar = Scrollbar(window, orient=VERTICAL, command=otext.yview)
 oyscrollbar.grid(row=1, column=1, sticky=N+S+E+W)
@@ -259,6 +274,8 @@ keyboard.add_hotkey("alt+F4", lambda: quit())
 keyboard.add_hotkey("ctrl+r", lambda: runr())
 keyboard.add_hotkey("ctrl+shift+r", lambda: runa())
 keyboard.add_hotkey("ctrl+e", lambda: o_empty())
+keyboard.add_hotkey("enter", lambda: set_tag())
+keyboard.add_hotkey("ctrl+shift+t", lambda: font_size())
 
 window.mainloop()
 
