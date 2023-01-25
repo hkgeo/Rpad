@@ -193,12 +193,11 @@ def newfile() :
     o_empty()
     seeend()
 
-def font_size():
+def mfont():
     try :
-        var1 = text.get('insert linestart', 'insert lineend')
-        var2 = int(var1)
-        text.configure(font=("Pretendard Variable Medium", var2))
-        otext.configure(font=("Pretendard Variable Medium", var2))
+        var1 = int(text.get('insert linestart', 'insert lineend'))
+        text.configure(font=("Pretendard Variable Medium", var1))
+        otext.configure(font=("Pretendard Variable Medium", var1))
         text.update()
         otext.update()
         text.delete('insert linestart', 'insert lineend')
@@ -275,7 +274,7 @@ keyboard.add_hotkey("ctrl+r", lambda: runr())
 keyboard.add_hotkey("ctrl+shift+r", lambda: runa())
 keyboard.add_hotkey("ctrl+e", lambda: o_empty())
 keyboard.add_hotkey("enter", lambda: set_tag())
-keyboard.add_hotkey("ctrl+shift+t", lambda: font_size())
+keyboard.add_hotkey("ctrl+shift+t", lambda: mfont())
 
 window.mainloop()
 
