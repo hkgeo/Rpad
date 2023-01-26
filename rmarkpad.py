@@ -23,6 +23,9 @@ def o_empty():
     f = open("./data/temp.r", 'w', encoding="UTF-8")
     f.write("")
     f.close
+    f2 = open("./data/temps.r", 'w', encoding="UTF-8")
+    f2.write("")
+    f2.close
 
 def fopen():
 	#파일 대화창을 askopenfile을 이용해서 만들고, 동시에 읽는다
@@ -70,7 +73,7 @@ def exit():
         window.destroy()
         
 def about():
-    label = messagebox.showinfo("About", "RPad v0.1 (c) 2023 Hyeok Jeong")
+    label = messagebox.showinfo("About", "RPad v0.2 (c) 2023 Hyeok Jeong")
 
 def rse():
     label = messagebox.showinfo("Rscript", rpath)
@@ -167,7 +170,7 @@ def set_tag():
         if not bs_lastidx : break
         text.tag_add('boxstart', bs_idx, bs_lastidx)
         bs_idx = bs_lastidx
-        text.tag_config('boxstart', background='#CCCCCC', foreground='black')
+        text.tag_config('boxstart', foreground='#FFE97F')
 
 def newfile() :
     file = open("./data/templete.Rmd", 'r', encoding="UTF-8")
@@ -207,7 +210,7 @@ window.geometry('1024x768')
 window.iconbitmap('./data/rpadico.ico')
 window.resizable(1,1)
 
-text = Text(window, undo=True)
+text = Text(master=window, undo=True, fg="#CCCCCC", bg="#202020", insertbackground="#CCCCCC", selectbackground="#007F0E")
 text.grid(row=0, column=0, sticky=W+N+S+E)
 text.configure(font=("Pretendard Variable Medium", 20))
 
@@ -217,7 +220,6 @@ text["yscrollcommand"]=yscrollbar.set
 text.update()
 
 text.bind("<Control-s>", lambda event: qsave())
-text.bind("<Control-Shift-s>", lambda event: save())
 text.bind("<Control-o>", lambda event: fopen())
 text.bind("<Control-r>", lambda event: runr())
 text.bind("<Control-a>", lambda event: runa())
@@ -226,7 +228,7 @@ text.bind("<Return>", lambda event: set_tag())
 text.bind("<Alt-t>", lambda event: mfont())
 
 
-otext = Text(window, undo=True)
+otext = Text(master=window, undo=True, fg="#7FFFFF", bg="#202020", insertbackground="#7FFFFF", selectbackground="#007F0E")
 otext.grid(row=1, column=0, sticky=W+N+S+E)
 otext.configure(font=("Pretendard Variable Medium", 20))
 
@@ -250,14 +252,14 @@ cpmenu = Menu(menu)
 menu.add_cascade(label="File", menu=filemenu)
 filemenu.add_command(label="New File", command=newfile)
 filemenu.add_command(label="Open...   (Ctrl+O)", command=fopen)
-filemenu.add_command(label="Save as...   (Ctrl+Shift+S)", command=save)
+filemenu.add_command(label="Save as...", command=save)
 filemenu.add_command(label="Find Rscript.exe", command=frse)
 filemenu.add_command(label="Kill queues   (Ctrl+E)", command=o_empty)
-filemenu.add_command(label="Quit   (Alt+F4)", command=exit)
+filemenu.add_command(label="Quit", command=exit)
 
 menu.add_cascade(label="Run", menu=runmenu)
 runmenu.add_command(label="Run current block only...   (Ctrl+R)", command=runr)
-runmenu.add_command(label="Run all blocks...   (Ctrl+Shift+R)", command=runa)
+runmenu.add_command(label="Run all blocks...   (Ctrl+A)", command=runa)
 
 menu.add_cascade(label="Knit", menu=cpmenu)
 cpmenu.add_command(label="Word Document (.docx)", command=cpdocx)
@@ -267,7 +269,7 @@ helpmenu = Menu(menu, tearoff=0) # 자르는 선
 
 menu.add_cascade(label="About", menu=helpmenu)
 helpmenu.add_command(label="About RPad", command=about)
-helpmenu.add_command(label="Rscript.exe", command=rse)
+helpmenu.add_command(label="Rscript", command=rse)
 
 window.bind("<Configure>", resize)
     
