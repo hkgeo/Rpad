@@ -27,6 +27,13 @@ def o_empty():
     f2.write("")
     f2.close
 
+def rpac():
+    try:
+        output = subprocess.getoutput("\"" + rpath + "\" ./data/packages.r")
+        otext.insert('1.0', output)
+    except : otext.insert('1.0', "Package install error")
+    otext.see(END)
+
 def fopen():
 	#파일 대화창을 askopenfile을 이용해서 만들고, 동시에 읽는다
     nfile = filedialog.askopenfilename(parent=window)
@@ -253,7 +260,8 @@ menu.add_cascade(label="File", menu=filemenu)
 filemenu.add_command(label="New File", command=newfile)
 filemenu.add_command(label="Open...   (Ctrl+O)", command=fopen)
 filemenu.add_command(label="Save as...", command=save)
-filemenu.add_command(label="Find Rscript.exe", command=frse)
+filemenu.add_command(label="Find Rscript", command=frse)
+filemenu.add_command(label="Install required packages", command=rpac)
 filemenu.add_command(label="Kill queues   (Ctrl+E)", command=o_empty)
 filemenu.add_command(label="Quit", command=exit)
 
