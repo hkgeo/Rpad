@@ -1,14 +1,19 @@
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
-import keyboard
-import os
+from tkinter.messagebox import askyesno
 import subprocess
 import pyglet
+import rpy2.robjects as robjects
 
 def seeend() :
     text.see(END)
     otext.see(END)
+
+def confirm():
+    ans = askyesno(title='Exit', message='Exit Rpad without saving?')
+    if ans:
+        window.destroy()
 
 def resize(event):
     pixelX=window.winfo_width()-yscrollbar.winfo_width()
@@ -20,19 +25,6 @@ def resize(event):
 
 def o_empty():
     otext.delete('1.0', END)
-    f = open("./data/temp.r", 'w', encoding="UTF-8")
-    f.write("")
-    f.close
-    f2 = open("./data/temps.r", 'w', encoding="UTF-8")
-    f2.write("")
-    f2.close
-
-def rpac():
-    try:
-        output = subprocess.getoutput("\"" + rpath + "\" ./data/packages.r")
-        otext.insert('1.0', output)
-    except : otext.insert('1.0', "Package install error")
-    otext.see(END)
 
 def fopen():
 	#파일 대화창을 askopenfile을 이용해서 만들고, 동시에 읽는다
@@ -93,91 +85,24 @@ def runcom():
         print(e)
 
 def runr():
-    set_tag()
-    otext.delete('1.0', END)
-    f = open("./data/temp.r", 'a', encoding="UTF-8")
-    otarget = text.get('1.0', "insert linestart")
-    ntarget = text.get("insert linestart", END)
-    try :
-        otarget = otarget.split(sep="```")
-        ntarget = ntarget.split(sep="```")
-        ftarget = otarget[len(otarget)-1] + ntarget[0]
-        ftarget = ftarget.split(sep='\n', maxsplit=1)
-        f.write(ftarget[1])
-        f.close()
-        output = subprocess.getoutput("\"" + rpath + "\" ./data/temp.r")
-        otext.insert('1.0', output)
+    otext.delete('insert linestart', 'insert lineend')
+    try:
+        tline = text.get('insert linestart', 'insert lineend')
+        rline = robjects.r(tline)
+        otext.insert('1.0', rline)
+        seeend()
+        qsave()
     except : otext.insert('1.0', "Rpad typeerror")
-    otext.see(END)
 
 def runa():
-    o_empty()
     otext.delete('1.0', END)
-    try :
-        f = open("./data/temps.r", 'a', encoding="UTF-8")
-        otarget = text.get('1.0', END).split(sep="```")
-        for i in range(len(otarget)) :
-            if i % 2 != 0 :
-                f.write(otarget[i])
-        f.close()        
-    except : otext.insert('1.0', "Rpad typeerror 1")
-    try :
-        f1 = open("./data/temps.r", 'r', encoding='UTF-8')
-        f2 = open("./data/temp.r", 'a', encoding='UTF-8')
-        while True :
-            inStr = f1.readline()
-            if inStr == '' :
-                break
-            if inStr[0] != "{" :
-                f2.write(inStr)
-        f1.close()
-        f2.close()
-    except Exception as e : otext.insert('1.0', e)
-    try :
-        output = subprocess.getoutput("\"" + rpath + "\" ./data/temp.r")
-        otext.insert('1.0', output)
-    except : otext.insert('1.0', "Rpad typeerror 3")
-    seeend()
-
-def cpdocx() :
-    cpfile = filedialog.askopenfilename(parent=window)
-    f = open("./data/render.r", 'w', encoding="UTF-8")
-    f.write("rmarkdown::render(\"" + cpfile + "\", \"word_document\")")
-    f.close()
-    try :
-        output = subprocess.getoutput("\"" + rpath + "\" render.r")
-        otext.insert('1.0', output)
+    try:
+        tline = text.get('insert linestart', 'insert lineend')
+        rline = robjects.r(tline)
+        otext.insert('1.0', rline)
+        seeend()
+        qsave()
     except : otext.insert('1.0', "Rpad typeerror")
-    otext.see(END)
-
-def cphtml() :
-    cpfile = filedialog.askopenfilename(parent=window)
-    f = open("./data/render.r", 'w', encoding="UTF-8")
-    f.write("rmarkdown::render(\"" + cpfile + "\", \"html_document\")")
-    f.close()
-    try :
-        output = subprocess.getoutput("\"" + rpath + "\" render.r")
-        otext.insert('1.0', output)
-    except : otext.insert('1.0', "Rpad typeerror")
-    otext.see(END)
-
-def frse() :
-    rsefile = filedialog.askopenfilename(parent=window)
-    f = open("./data/r.txt", 'w', encoding="UTF-8")
-    f.write(rsefile)
-    global rpath
-    rpath = rsefile
-
-def set_tag():
-    bs_idx = '1.0'
-    while True :
-        bs_idx = text.search("```{r", bs_idx, nocase=1, stopindex=END)
-        if not bs_idx : break
-        bs_lastidx = "%s+3c" % (text.search("```\n", bs_idx, nocase=1, stopindex=END))
-        if not bs_lastidx : break
-        text.tag_add('boxstart', bs_idx, bs_lastidx)
-        bs_idx = bs_lastidx
-        text.tag_config('boxstart', foreground='#FFE97F')
 
 def newfile() :
     file = open("./data/templete.Rmd", 'r', encoding="UTF-8")
@@ -192,6 +117,13 @@ def newfile() :
         file.close()
     o_empty()
     seeend()
+
+def frse() :
+    rsefile = filedialog.askopenfilename(parent=window)
+    f = open("./data/r.txt", 'w', encoding="UTF-8")
+    f.write(rsefile)
+    global rpath
+    rpath = rsefile
 
 def mfont():
     try :
@@ -212,7 +144,7 @@ rf.close
 
 #창 생성
 window = Tk()
-window.title('RPad Beta')
+window.title('Rpad Beta')
 window.geometry('1024x768')
 window.iconbitmap('./data/rpadico.ico')
 window.resizable(1,1)
@@ -229,9 +161,8 @@ text.update()
 text.bind("<Control-s>", lambda event: qsave())
 text.bind("<Control-o>", lambda event: fopen())
 text.bind("<Control-r>", lambda event: runr())
-text.bind("<Control-a>", lambda event: runa())
+text.bind("<Control-Shift-KeyPress-R>", lambda event: runa())
 text.bind("<Control-e>", lambda event: o_empty())
-text.bind("<Return>", lambda event: set_tag())
 text.bind("<Alt-t>", lambda event: mfont())
 
 
@@ -254,29 +185,22 @@ menu = Menu(window)
 window.config(menu=menu)
 filemenu = Menu(menu)
 runmenu = Menu(menu)
-cpmenu = Menu(menu)
 
 menu.add_cascade(label="File", menu=filemenu)
 filemenu.add_command(label="New File", command=newfile)
 filemenu.add_command(label="Open...   (Ctrl+O)", command=fopen)
 filemenu.add_command(label="Save as...", command=save)
 filemenu.add_command(label="Find Rscript", command=frse)
-filemenu.add_command(label="Install required packages", command=rpac)
 filemenu.add_command(label="Kill queues   (Ctrl+E)", command=o_empty)
 filemenu.add_command(label="Quit", command=exit)
 
 menu.add_cascade(label="Run", menu=runmenu)
-runmenu.add_command(label="Run current block only...   (Ctrl+R)", command=runr)
-runmenu.add_command(label="Run all blocks...   (Ctrl+A)", command=runa)
-
-menu.add_cascade(label="Knit", menu=cpmenu)
-cpmenu.add_command(label="Word Document (.docx)", command=cpdocx)
-cpmenu.add_command(label="Html Document (.html)", command=cphtml)
+runmenu.add_command(label="Run current line only...   (Ctrl+R)", command=runr)
 
 helpmenu = Menu(menu, tearoff=0) # 자르는 선
 
 menu.add_cascade(label="About", menu=helpmenu)
-helpmenu.add_command(label="About RPad", command=about)
+helpmenu.add_command(label="About Rpad", command=about)
 helpmenu.add_command(label="Rscript", command=rse)
 
 window.bind("<Configure>", resize)
@@ -291,4 +215,5 @@ window.bind("<Configure>", resize)
 #keyboard.add_hotkey("enter", lambda: set_tag())
 #keyboard.add_hotkey("ctrl+shift+t", lambda: mfont())
 
+window.protocol( "WM_DELETE_WINDOW", confirm )
 window.mainloop()
