@@ -204,16 +204,6 @@ helpmenu.add_command(label="About Rpad", command=about)
 helpmenu.add_command(label="Rscript", command=rse)
 
 window.bind("<Configure>", resize)
-    
-#keyboard.add_hotkey("ctrl+s", lambda: qsave())
-#keyboard.add_hotkey("ctrl+shift+s", lambda: save())
-#keyboard.add_hotkey("ctrl+o", lambda: fopen())
-#keyboard.add_hotkey("alt+F4", lambda: quit())
-#keyboard.add_hotkey("ctrl+r", lambda: runr())
-#keyboard.add_hotkey("ctrl+shift+r", lambda: runa())
-#keyboard.add_hotkey("ctrl+e", lambda: o_empty())
-#keyboard.add_hotkey("enter", lambda: set_tag())
-#keyboard.add_hotkey("ctrl+shift+t", lambda: mfont())
 
 window.protocol( "WM_DELETE_WINDOW", confirm )
 window.mainloop()
