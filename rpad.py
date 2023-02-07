@@ -6,9 +6,6 @@ import subprocess
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
-import pandas as pd
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
 
 nowfile=''
 
@@ -204,7 +201,7 @@ def font72():
         resize()
 
 #창 생성
-window = ttk.Window(themename="vapor")
+window = Tk()
 window.title('Rpad Beta')
 window.geometry('1024x768')
 window.iconbitmap('./data/rpadico.ico')
