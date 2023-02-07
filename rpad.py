@@ -4,10 +4,11 @@ from tkinter import messagebox
 from tkinter.messagebox import askyesno
 import subprocess
 import rpy2.robjects as robjects
-import tkinter.ttk
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 import pandas as pd
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 
 nowfile=''
 
@@ -29,7 +30,7 @@ def resize(event):
     otext["width"]=int(round(pixelX/h2[1]))
     otext["height"]=int(round(pixelY2/h2[0]))
     itext["width"]=int(round(pixelX/h2[1]))
-    itext["height"]=7
+    itext["height"]=5
 
 def o_empty():
     otext.delete('1.0', END)
@@ -80,7 +81,7 @@ def exit():
         window.destroy()
         
 def about():
-    label = messagebox.showinfo("About", "RPad v0.4 (c) 2023 Hyeok Jeong")
+    label = messagebox.showinfo("About", "RPad v0.5 (c) 2023 Hyeok Jeong")
 
 def runcom():
     target = text.get("1.0","insert lineend")
@@ -95,7 +96,7 @@ def runr():
         tline = text.get('insert linestart', 'insert lineend')
         rline = robjects.r(tline)
         otext.insert(END, rline)
-        iline = robjects.r('ls.str()')
+        iline = robjects.r('ls()')
         itext.insert('1.0', iline)
         seeend()
         qsave()
@@ -108,7 +109,7 @@ def runa():
         tline = text.get('1.0', END)
         rline = robjects.r(tline)
         otext.insert(END, rline)
-        iline = robjects.r('ls.str()')
+        iline = robjects.r('ls()')
         itext.insert('1.0', iline)
         seeend()
         qsave()
@@ -203,18 +204,27 @@ def font72():
         resize()
 
 #창 생성
-window = Tk()
+window = ttk.Window(themename="vapor")
 window.title('Rpad Beta')
 window.geometry('1024x768')
 window.iconbitmap('./data/rpadico.ico')
 window.resizable(1,1)
+window.configure(bg="#303030")
 
-text = Text(master=window, undo=True, fg="#CCCCCC", bg="#202020", insertbackground="#CCCCCC")
-text.grid(row=0, column=0, rowspan=2, sticky=W+N+S)
+label1 = Label(window, text='Script', font=('Arial', 14))
+label2 = Label(window, text='Output', font=('Arial', 14))
+label3 = Label(window, text='Data', font=('Arial', 14))
+
+label1.grid(row=0, column=0, columnspan=2)
+label2.grid(row=0, column=2, columnspan=2)
+label3.grid(row=2, column=2, columnspan=2)
+
+text = Text(master=window, undo=True)
+text.grid(row=1, column=0, rowspan=3, sticky=W+N+S)
 text.configure(font=("Courier New", open("./data/fontsize.txt", "r", encoding='UTF-8').readlines(), "bold"))
 
 yscrollbar = Scrollbar(window, orient=VERTICAL, command=text.yview)
-yscrollbar.grid(row=0, column=1, rowspan=2, sticky=N+S+W)
+yscrollbar.grid(row=1, column=1, rowspan=3, sticky=N+S+W)
 text["yscrollcommand"]=yscrollbar.set
 
 text.bind("<Control-s>", lambda event: qsave())
@@ -227,21 +237,36 @@ text.bind("<Control-e>", lambda event: o_empty())
 #text.bind("<Control-Down>", lambda event: sfont(cfontsize, -5))
 
 
-otext = Text(master=window, undo=True, fg="#7FFFFF", bg="#202020", insertbackground="#7FFFFF")
-otext.grid(row=0, column=2, sticky=N+E+S)
+otext = Text(master=window, undo=True)
+otext.grid(row=1, column=2, sticky=N+E+S)
 otext.configure(font=("Courier New", open("./data/fontsize.txt", "r", encoding='UTF-8').readlines(), "bold"))
 
 oyscrollbar = Scrollbar(window, orient=VERTICAL, command=otext.yview)
-oyscrollbar.grid(row=0, column=3, sticky=N+S+W)
+oyscrollbar.grid(row=1, column=3, sticky=N+S+W)
 otext["yscrollcommand"]=oyscrollbar.set
 
-itext = Text(master=window, undo=True, fg="#FFFF00", bg="#202020", insertbackground="#FFFF00")
-itext.grid(row=1, column=2, sticky=N+E+S)
+itext = Text(master=window, undo=True)
+itext.grid(row=3, column=2, sticky=N+E+S)
 itext.configure(font=("Courier New", open("./data/fontsize.txt", "r", encoding='UTF-8').readlines(), "bold"))
+
+iyscrollbar = Scrollbar(window, orient=VERTICAL, command=itext.yview)
+iyscrollbar.grid(row=3, column=3, sticky=N+S+W)
+itext["yscrollcommand"]=iyscrollbar.set
+
+text.configure(bg="#202020", fg="#AAAAAA", insertbackground="#AAAAAA")
+itext.configure(bg="#202020", fg="#AAAAAA")
+otext.configure(bg="#202020", fg="#AAAAAA")
+label1.configure(bg="#303030", fg="#AAAAAA")
+label2.configure(bg="#303030", fg="#AAAAAA")
+label3.configure(bg="#303030", fg="#AAAAAA")
+
 
 text.update()
 otext.update()
 itext.update()
+label1.update()
+label2.update()
+label3.update()
 
 h1=int(round(text.winfo_height()/text["height"])), int(round(text.winfo_width()/text["width"]))
 h2=int(round(otext.winfo_height()/otext["height"])), int(round(otext.winfo_width()/otext["width"]))
@@ -249,14 +274,14 @@ h2=int(round(otext.winfo_height()/otext["height"])), int(round(otext.winfo_width
 window.bind("<Configure>", resize)
 
 #메뉴를 붙인다
-menu = Menu(window)
-window.config(menu=menu)
-filemenu = Menu(menu, tearoff=0)
-runmenu = Menu(menu, tearoff=0)
-fontmenu = Menu(menu, tearoff=0)
-helpmenu = Menu(menu, tearoff=0)
+menubar = Menu(window, background="#303030", fg="#AAAAAA")
+menubar.config(background="#303030", fg="#AAAAAA", activebackground="#202020",activeforeground='yellow',font=("Courier New", 12, "bold"))
+filemenu = Menu(menubar, tearoff=0, background="#303030", fg="#FFFFFF", font=("Courier New", 12, "bold"), borderwidth=0)
+runmenu = Menu(menubar, tearoff=0, background="#303030", fg="#FFFFFF", font=("Courier New", 12, "bold"), borderwidth=0)
+fontmenu = Menu(menubar, tearoff=0, background="#303030", fg="#FFFFFF", font=("Courier New", 12, "bold"), borderwidth=0)
+helpmenu = Menu(menubar, tearoff=0, background="#303030", fg="#FFFFFF", font=("Courier New", 12, "bold"), borderwidth=0)
 
-menu.add_cascade(label="File", menu=filemenu)
+menubar.add_cascade(label="File", menu=filemenu)
 filemenu.add_command(label="New File", command=newfile)
 filemenu.add_command(label="Open...   (Ctrl+O)", command=fopen)
 filemenu.add_command(label="Save...    (Ctrl+S)", command=qsave)
@@ -264,11 +289,11 @@ filemenu.add_command(label="Save as...    (Ctrl+Shift+S)", command=save)
 filemenu.add_command(label="Empty Output   (Ctrl+E)", command=o_empty)
 filemenu.add_command(label="Quit", command=exit)
 
-menu.add_cascade(label="Run", menu=runmenu)
+menubar.add_cascade(label="Run", menu=runmenu)
 runmenu.add_command(label="Run current line only...   (Ctrl+R)", command=runr)
 runmenu.add_command(label="Run all...   (Ctrl+Shift+R)", command=runa)
 
-menu.add_cascade(label="Font", menu=fontmenu)
+menubar.add_cascade(label="Font", menu=fontmenu)
 fontmenu.add_command(label="16pt", command=font16)
 fontmenu.add_command(label="20pt", command=font20)
 fontmenu.add_command(label="28pt", command=font28)
@@ -276,8 +301,9 @@ fontmenu.add_command(label="36pt", command=font36)
 fontmenu.add_command(label="48pt", command=font48)
 fontmenu.add_command(label="72pt", command=font72)
 
-menu.add_cascade(label="About", menu=helpmenu)
+menubar.add_cascade(label="About", menu=helpmenu)
 helpmenu.add_command(label="About Rpad", command=about)
 
+window.config(menu=menubar)
 window.protocol( "WM_DELETE_WINDOW", confirm )
 window.mainloop()
